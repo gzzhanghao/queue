@@ -31,6 +31,7 @@ assign(Queue.prototype, {
 		if (this[symRes].length) {
 			return Promise.resolve(this[symRes].shift()).then(res => task.run(res));
 		}
+		priority = priority || 0;
 		return new Promise((resolve, reject) => {
 
 			let resolvers = { resolve, reject, priority };
@@ -66,7 +67,7 @@ assign(Queue.prototype, {
 
 	_insertQueue: function(resolvers, priority) {
 		for (var index = this[symQueue].length - 1; index >= 0; index--) {
-			if (this[symQueue][index].priority > priority) {
+			if (this[symQueue][index].priority >= priority) {
 				break;
 			}
 		}

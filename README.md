@@ -26,10 +26,7 @@ Prioritize the task with given priority.
 
 ### Task(opts)
 
-Create a task with given options. The opts parameter must provides following methods:
-
-- run(resource) Invoked when the resource is present and the task should be running
-- abort() Invoked when the user wants to abort the task
+Create a task with given options. The opts parameter must provides a `run(resource)` method, and may provides a `abort()` method in the case that the task may be aborted.
 
 ### Task#run(resource)
 

@@ -38,7 +38,9 @@ assign(Task.prototype, {
 	abort: function() {
 		if (this[symStatus] === Task.RUNNING || this[symStatus] === Task.WAITING) {
 			this[symStatus] = Task.REJECTED;
-			this[symOpts].abort();
+			if (this[symOpts].abort) {
+				this[symOpts].abort();
+			}
 		}
 	},
 

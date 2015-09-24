@@ -7,8 +7,21 @@ var res = new EventEmitter;
 
 queue.addResource(res);
 
-var task = new Task({ run: () => console.log(0), abort: () => console.log('abort') });
-queue.run(task).then(() => console.log('resolved'), (error) => console.log('rejected', error)).then(() => res.emit('ready'));
+var response = {};
 
-var task = new Task({ run: () => console.log(0), abort: () => console.log('abort') });
-queue.run(task).then(() => console.log('resolved'), (error) => console.log('rejected', error));
+var task = new Task({ run: () => console.log('run') }); // Log once
+
+queue.run(task).then(() => {
+	console.log(1);
+	res.emit('ready')
+});
+
+queue.run(task).then(() => {
+	console.log(2);
+	res.emit('ready')
+});
+
+queue.run(task).then(() => {
+	console.log(3);
+	res.emit('ready');
+});
