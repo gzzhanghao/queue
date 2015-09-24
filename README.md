@@ -28,8 +28,8 @@ Prioritize the task with given priority.
 
 Create a task with given options. The opts parameter must provides following methods:
 
-- __run(resource)__
-- __abort()__
+- run(resource) Invoked when the resource is present and the task should be running
+- abort() Invoked when the user wants to abort the task
 
 ### Task#run(resource)
 

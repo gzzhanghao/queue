@@ -16,20 +16,20 @@ function Queue() {
 
 assign(Queue.prototype, {
 
-	addResource: function(resource) {
+	addResource: function(res) {
 		var ready = () => {
 			if (this[symQueue].length) {
-				return this[symQueue].shift().resolve(resource);
+				return this[symQueue].shift().resolve(res);
 			}
-			this[symRes].push(resource);
+			this[symRes].push(res);
 		};
-		resource.on('ready', () => ready());
+		res.on('ready', () => ready());
 		ready();
 	},
 
 	run: function(task, priority) {
 		if (this[symRes].length) {
-			return task.run(this[symRes].shift());
+			return Promise.resolve(this[symRes].shift()).then(res => task.run(res));
 		}
 		return new Promise((resolve, reject) => {
 
@@ -37,10 +37,10 @@ assign(Queue.prototype, {
 			this[symTaskMap].set(task, resolvers);
 			this._insertQueue(resolvers, priority);
 
-		}).then(resource => {
+		}).then(res => {
 
 			this[symTaskMap].delete(task);
-			return task.run(resource);
+			return task.run(res);
 		});
 	},
 
