@@ -28,26 +28,42 @@ assign(Queue.prototype, {
 	},
 
 	run: function(task, priority) {
-		if (this[symRes].length) {
-			return Promise.resolve(this[symRes].shift()).then(res => task.run(res));
+		var resolvers = this[symTaskMap].get(task);
+		if (resolvers) {
+			if (resolvers.priority < priority) {
+				this.prioritize(task, priority);
+			}
+			return resolvers.promise;
 		}
-		priority = priority || 0;
-		return new Promise((resolve, reject) => {
 
-			let resolvers = { resolve, reject, priority };
-			this[symTaskMap].set(task, resolvers);
-			this._insertQueue(resolvers, priority);
+		var promise;
+		this[symTaskMap].set(task, resolvers = {});
 
-		}).then(res => {
+		if (this[symRes].length) {
+			promise = new Promise((resolve, reject) => {
+				priority = priority || 0;
+				assign(resolvers, { resolve, reject, priority });
+				this._insertQueue(resolvers, priority);
+			});
+		} else {
+			promise = Promise.resolve(this[symRes].shift());
+		}
 
-			this[symTaskMap].delete(task);
-			return task.run(res);
-		});
+		resolvers.promise = promise.then(res =>
+			task.run(res)
+		).then(() =>
+			this[symTaskMap].delete(task)
+		);
+
+		return resolvers.promise;
 	},
 
 	abort: function(task) {
 		var resolvers = this[symTaskMap].get(task);
 		var index = this[symQueue].indexOf(resolvers);
+
+		this[symTaskMap].delete(task);
+
 		if (index >= 0) {
 			resolvers.reject(new Error('aborted'));
 			this[symQueue].splice(index, 1);
@@ -57,6 +73,9 @@ assign(Queue.prototype, {
 
 	prioritize: function(task, priority) {
 		var resolvers = this[symTaskMap].get(task);
+		if (priority === resolvers.priority) {
+			return;
+		}
 		var index = this[symQueue].indexOf(resolvers);
 		if (index >= 0) {
 			this[symQueue].splice(index, 1);
